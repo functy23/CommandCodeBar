@@ -7,6 +7,27 @@ struct SettingsView: View {
     @AppStorage("menuBarDisplayStyle") private var menuBarDisplayStyleRaw = MenuBarDisplayStyle.ringAndText.rawValue
     @AppStorage("panelHeroStyle") private var panelHeroStyleRaw = PanelHeroStyle.dualRings.rawValue
     @AppStorage("refreshInterval") private var refreshInterval = 60.0
+    @AppStorage("stayInBackground") private var stayInBackground = true
+    @AppStorage("launchAtLoginEnabled") private var launchAtLoginEnabled = false
+    @State private var launchRegistered = LaunchAtLogin.isEnabled
+    @State private var launchAtLoginError: String?
+
+    /// 任一开关开启，系统里就要保留「允许在后台」注册
+    private var needsSystemRegistration: Bool {
+        launchAtLoginEnabled || stayInBackground
+    }
+
+    /// 把系统注册同步到两个开关的共同期望，失败时回读真实状态并报错
+    private func syncRegistration() {
+        do {
+            try LaunchAtLogin.sync(enabled: needsSystemRegistration)
+            launchRegistered = LaunchAtLogin.isEnabled
+            launchAtLoginError = nil
+        } catch {
+            launchRegistered = LaunchAtLogin.isEnabled
+            launchAtLoginError = error.localizedDescription
+        }
+    }
     @State private var customKey = ""
 
     private var metricIsIconOnly: Bool {
@@ -15,6 +36,39 @@ struct SettingsView: View {
 
     var body: some View {
         Form {
+            Section("通用") {
+                Toggle("开机自启动", isOn: Binding(
+                    get: { launchAtLoginEnabled },
+                    set: { newValue in
+                        launchAtLoginEnabled = newValue
+                        syncRegistration()
+                    }
+                ))
+                Text("登录系统时自动启动。注册到系统设置 → 通用 → 登录项与扩展的「允许在后台」列表；若系统提示需要批准，请在系统设置中放行。")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                Toggle("常驻后台运行", isOn: Binding(
+                    get: { stayInBackground },
+                    set: { newValue in
+                        stayInBackground = newValue
+                        syncRegistration()
+                    }
+                ))
+                Text("开启时向系统注册「允许在后台」权限，并按设定的间隔在后台持续刷新额度；关闭时不向系统注册，仅在打开面板时刷新，更省电。")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                if !needsSystemRegistration && launchRegistered {
+                    Text("系统注册将在注销后完全移除。")
+                        .font(.caption)
+                        .foregroundStyle(.tertiary)
+                }
+                if let launchAtLoginError {
+                    Label(launchAtLoginError, systemImage: "exclamationmark.triangle")
+                        .font(.caption)
+                        .foregroundStyle(.orange)
+                }
+            }
+
             Section("菜单栏") {
                 Picker("显示指标", selection: $menuBarMetricRaw) {
                     ForEach(MenuBarMetric.allCases) { option in
@@ -85,7 +139,7 @@ struct SettingsView: View {
             }
         }
         .formStyle(.grouped)
-        .frame(width: 460, height: 460)
+        .frame(width: 460, height: 560)
     }
 
     private var shortVersion: String {

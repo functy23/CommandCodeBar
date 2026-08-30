@@ -45,6 +45,7 @@ QuotaService（API 客户端 + Key 解析）
 | SettingsView.swift | 设置表单（由 SettingsWindowController 承载） |
 | Onboarding/* | 首启引导窗口与向导 |
 | Support/StatusItemIcon.swift | 菜单栏 template 图标绘制与"图标+文字"合成 |
+| Support/LaunchAtLogin.swift | SMAppService 开机自启/后台注册（两开关共用，任一开启即注册） |
 | Support/Fmt.swift | 数字/百分比/倒计时格式化 |
 
 ### UserDefaults 键
@@ -55,6 +56,8 @@ QuotaService（API 客户端 + Key 解析）
 | menuBarDisplayStyle | 菜单栏样式（textOnly/ringAndText/ringOnly） | ringAndText |
 | panelHeroStyle | 面板主图（dualRings/singleRing/dualBars） | dualRings |
 | refreshInterval | 自动刷新秒数（≥30） | 60 |
+| stayInBackground | 常驻后台：关闭时后台不轮询，仅打开面板才刷新 | true |
+| launchAtLoginEnabled | 开机自启动（@AppStorage 缓存，真实状态以 SMAppService 为准） | false |
 | customAPIKey | 手动指定的 API Key | 无 |
 | lastGoodSnapshot | 上次成功快照（JSON，刷新失败兜底） | 无 |
 | hasCompletedOnboarding | 引导是否完成 | false |

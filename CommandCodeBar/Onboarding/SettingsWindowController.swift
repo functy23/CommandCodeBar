@@ -11,7 +11,7 @@ final class SettingsWindowController {
 
     func show(store: QuotaStore) {
         if window == nil {
-            let size = NSSize(width: 460, height: 460)
+            let size = NSSize(width: 460, height: 560)
             let window = NSWindow(
                 contentRect: NSRect(origin: .zero, size: size),
                 styleMask: [.titled, .closable, .miniaturizable],

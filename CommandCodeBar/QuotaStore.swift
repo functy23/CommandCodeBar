@@ -77,6 +77,8 @@ final class QuotaStore {
     private(set) var menuBarDisplayStyle: MenuBarDisplayStyle = .ringAndText
     private(set) var panelHeroStyle: PanelHeroStyle = .dualRings
     private(set) var refreshInterval: TimeInterval = 60
+    /// 常驻后台：开启时后台定时刷新；关闭时仅打开面板才刷新
+    private(set) var stayInBackground = true
 
     private let service = QuotaService()
     private var refreshTimer: Timer?
@@ -126,10 +128,17 @@ final class QuotaStore {
             refreshInterval = interval
             scheduleAutoRefresh()
         }
+
+        let backgroundRefresh = defaults.object(forKey: "stayInBackground") as? Bool ?? true
+        if backgroundRefresh != stayInBackground {
+            stayInBackground = backgroundRefresh
+            scheduleAutoRefresh()
+        }
     }
 
     private func scheduleAutoRefresh() {
         refreshTimer?.invalidate()
+        guard stayInBackground else { return }
         let interval = refreshInterval
         refreshTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { [weak self] _ in
             Task { @MainActor [weak self] in
