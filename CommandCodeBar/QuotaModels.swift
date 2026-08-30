@@ -1,9 +1,9 @@
 import Foundation
 
 // MARK: - API 响应（对应 api.commandcode.ai /alpha/* 接口，字段按实际返回宽松解码）
-// nonisolated：解码在并发上下文中进行，不能受 MainActor 隔离约束
+// Decodable 结构体默认 nonisolated（Swift 5 模式），解码在并发上下文中进行不受 MainActor 约束
 
-nonisolated struct WhoamiResponse: Decodable {
+struct WhoamiResponse: Decodable {
     struct User: Decodable {
         var id: String?
         var name: String?
@@ -20,7 +20,7 @@ nonisolated struct WhoamiResponse: Decodable {
     var org: Org?
 }
 
-nonisolated struct CreditsResponse: Decodable {
+struct CreditsResponse: Decodable {
     struct Credits: Decodable {
         var monthlyCredits: Double?
         var purchasedCredits: Double?
@@ -46,7 +46,7 @@ nonisolated struct CreditsResponse: Decodable {
     var windowLimits: WindowLimits?
 }
 
-nonisolated struct SubscriptionResponse: Decodable {
+struct SubscriptionResponse: Decodable {
     struct Data: Decodable {
         var planId: String?
         var status: String?
@@ -57,7 +57,7 @@ nonisolated struct SubscriptionResponse: Decodable {
     var data: Data?
 }
 
-nonisolated struct UsageSummaryResponse: Decodable {
+struct UsageSummaryResponse: Decodable {
     var totalCost: Double?
     var totalCount: Double?
     var totalTokens: Double?

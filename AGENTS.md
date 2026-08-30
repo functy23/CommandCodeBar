@@ -23,7 +23,7 @@ pkill -x CommandCodeBar; sleep 1
 open build/Build/Products/Debug/CommandCodeBar.app
 ```
 
-注意：本仓库**没有共享 scheme 文件**。Xcode 27 beta 解析手写 .xcscheme 会直接崩溃（SIGTRAP），构建依赖 xcodebuild 自动生成的 scheme。不要提交 .xcscheme。
+注意：本仓库**没有共享 scheme 文件**。本机 Xcode（16.2 及此前试用过的 27 beta）解析手写 .xcscheme 都会出问题（27 beta 直接 SIGTRAP 崩溃），构建依赖 xcodebuild 自动生成的 scheme。不要提交 .xcscheme。
 
 ## 架构与数据流
 
@@ -38,7 +38,7 @@ QuotaService（API 客户端 + Key 解析）
 
 | 文件 | 职责 |
 |---|---|
-| QuotaModels.swift | API 响应 DTO（nonisolated）+ QuotaSnapshot 领域模型 |
+| QuotaModels.swift | API 响应 DTO + QuotaSnapshot 领域模型 |
 | QuotaService.swift | Key 解析、4 接口并发抓取、错误类型 |
 | QuotaStore.swift | 状态中心 + MenuBarMetric/DisplayStyle/PanelHeroStyle 设置模型 |
 | MenuBarPanelView.swift | 面板 UI（主图、明细卡片、页脚） |
@@ -81,8 +81,8 @@ JSON 形状：`{"apiKey":…}` / `{"command-code":{"key":…}}` / `{"commandcode
 1. **App Sandbox 必须保持关闭**（`ENABLE_APP_SANDBOX = NO`）——应用要读 `~/.commandcode/auth.json`。
 2. **MenuBarExtra 里不要用 SettingsLink**，`NSApp.sendAction(showSettingsWindow:)` 同样不可靠；设置窗口必须用 `SettingsWindowController`（独立 NSWindow，已实测可用）。
 3. **菜单栏"图标+文字"必须用 `StatusItemIcon` 的 combinedIcon 预合成单张 template 图**（Core Text 按字体 capHeight 计算基线）。`HStack{Image, Text}` 在 MenuBarExtra 中无法垂直对齐，这是 SwiftUI 缺陷，别改回去。
-4. **AppIcon 用多尺寸 idiom=mac 格式**；`"platform": "macos"` 单尺寸 catalog 在本机 Xcode 27 beta 会产生构建告警。
-5. QuotaModels 里的 API 响应结构体必须标 `nonisolated`（解码在并发上下文执行）；`async let` 读取要 `try await`。
+4. **AppIcon 用多尺寸 idiom=mac 格式**；`"platform": "macos"` 单尺寸 catalog 会产生构建告警。
+5. API 响应 DTO 保持普通 `Decodable` 结构体即可（Swift 5 模式下默认 nonisolated，解码在并发上下文执行不受 MainActor 约束）。**不要加类型级 `nonisolated` 修饰符**——那是 Swift 6.1（Xcode 16.3+）特性，本机 Xcode 16.2（macOS 14 上限，Swift 6.0）编不过。`async let` 读取要 `try await`。
 6. 刷新失败时**不得清空旧快照**（TokenBar 行为：失败不空白，仅横幅提示）。
 7. 面板主图（双圆环/双条形）模式下不要再渲染下方窗口明细行（单圆环模式除外），避免重复。
 
