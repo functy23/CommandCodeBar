@@ -2,6 +2,15 @@
 
 本文件面向在本仓库工作的 AI 编码代理（也对人类贡献者有用）。改动前请先读完"已知坑"一节。
 
+## 文档约定（双语 + 徽章）
+
+README 为**英文主文档**（`README.md`）+ **中文全量翻译**（`doc/README_zh-CN.md`），
+两份内容一一对应，**改一边必须同步另一边**。两份文件顶部是同一组 shields.io 徽章
+（语言/平台/CI/License/Release/Downloads/Stars/Repo Size/Contributors 按仓库实际能力裁剪，
+没有的能力不放，避免死链），徽章下面一行语言切换：
+`README.md` 用 `**English** | [简体中文](doc/README_zh-CN.md)`，
+中文版用 `[English](../README.md) | **简体中文**`。增删徽章时两份一起改。
+
 ## 项目概述
 
 macOS 菜单栏应用，实时显示 Command Code CLI 的额度用量。
